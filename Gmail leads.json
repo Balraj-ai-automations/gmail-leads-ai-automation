@@ -1,0 +1,302 @@
+{
+  "name": "Gmail leads",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "41c80f8d-c703-4d08-a640-8b8ef12b5ae0",
+      "name": "Gmail Trigger",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "d4ohyjb9gZopynR5",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=so you are You are an AI lead qualification assistant.\n\nYour task is to analyze email and you need to draft  the mail ex( we go the lead so these is the details of the lead )\nyour \ntask 1 : draft the  proffestional email by taking an  email data\nemail data\ntask 2 : give me the from email seperetally  (include in text and seperately \n) \n \n from email\n {{ $json.From }}\nsubject \n{{ $json.Subject }}\nbody \n{{ $json.snippet }}\n\nthese is constant give me in output \n\n{{ $json.From }}\n\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        256,
+        0
+      ],
+      "id": "d065c52f-4320-44d0-a39d-ede6afc52d4a",
+      "name": "Message a model",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fb5c8ad0-efeb-42a3-af22-9a973c86c9d8",
+              "name": "text ",
+              "value": "={{ $json.output[0].content[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "2346becc-20fd-4ce6-8397-c011fd709b77",
+              "name": "to",
+              "value": "={{ $('Gmail Trigger').item.json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "cca5ceb4-6b6a-4e61-a078-116bf4c6f304",
+              "name": "from",
+              "value": "={{ $('Gmail Trigger').item.json.To }}",
+              "type": "string"
+            },
+            {
+              "id": "36afc57a-1039-4f36-9630-02d755f89b11",
+              "name": "Subject",
+              "value": "={{ $('Gmail Trigger').item.json.Subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        -176
+      ],
+      "id": "2d860888-38d3-4674-9481-f7831c946b5a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.Subject }}",
+        "emailType": "text",
+        "message": "={{ $json['text '] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        0
+      ],
+      "id": "7fffa82b-4a74-4d17-8318-f700a728c177",
+      "name": "Send a message",
+      "webhookId": "78b2eba3-2bb7-40fc-894c-f5856e2619bc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "d4ohyjb9gZopynR5",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "89d0c964-98c4-4bd7-b6ae-9e177dc9fdae",
+              "name": "to",
+              "value": "={{ $('Gmail Trigger').item.json.To }}",
+              "type": "string"
+            },
+            {
+              "id": "7ded1bba-be7e-46b1-9aff-6061f0938ad1",
+              "name": "from team sent",
+              "value": "={{ $('Message a model').item.json.output[0].content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        176
+      ],
+      "id": "7b18d139-34a6-49e3-82f9-efd99c2b6277",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=so act like you are replaying to coustamers \n\nso you have previous data which have collected about coustomers  and you gone tell the severives which you provied \n\nso serviese are (SAP softwere application productus )\n\n\n\nso cousomer detaies in json \n{{ $json['from team sent'] }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "52fdb498-c262-429e-82fa-b87b850206b2",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Edit Fields1').item.json.to }}",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1616,
+        0
+      ],
+      "id": "cd15c5fe-2b37-4781-a526-7354b8609f8d",
+      "name": "Send a message1",
+      "webhookId": "d22193df-a858-4285-a50a-fe9d770e5437",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "d4ohyjb9gZopynR5",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2a7a04ca-33f7-4b37-900b-4f0696feea41",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4508aea09bbdf526dd94d3c061d744ffc9f2323f0170193a7ac7029464da58e"
+  },
+  "id": "QhtBIaN5dWfZHnqm",
+  "tags": []
+}
